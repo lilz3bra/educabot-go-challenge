@@ -30,3 +30,26 @@ Mi estrategia fue primero refactorizar el codigo existente, luego implementar el
 
 -   Hubiera agregado tests de integracion para validar el flujo completo del endpoint (especialmente cubriendo /providers).
 -   Hubiera agregado manejo de errores más detallado para los diferentes posibles errores de la API externa.
+
+---
+
+### **Addendum / Corrección Post-Entrega**
+
+Luego de la entrega, al revisar la solución final, noté que cometí un error en el ensamblado de la aplicación dentro de `main.go`. En mi apuro por finalizar dentro de la hora, dejé inyectada la implementación del mock (`MockBooksProvider`) en lugar del cliente de API real.
+
+La inicialización correcta para que la aplicación principal utilice el cliente de API y consuma los datos externos es la siguiente:
+
+```go
+// main.go - Corrección
+
+// 1. Importar el cliente real
+import "[educabot.com/bookshop/client](https://educabot.com/bookshop/client)"
+
+// ... dentro de la función main() ...
+
+// 2. Crear la instancia del cliente de API real
+apiClient := client.NewBookAPIClient("https://[url-del-mock-api].mockapi.com")
+
+// 3. Inyectar el cliente real en el handler, en lugar del mock
+metricsHandler := handlers.NewGetMetrics(apiClient)
+```
