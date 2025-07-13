@@ -27,10 +27,20 @@ func (h GetMetrics) Handle() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "query invalida"})
 			return
 		}
-		books := h.booksProvider.GetBooks(ctx) // usar el contexto de gin en vez de uno nuevo
+		books, err := h.booksProvider.GetBooks(ctx) // usar el contexto de gin en vez de uno nuevo
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get books"})
+			return
+		}
 
 		meanUnitsSold := service.MeanUnitsSold(books)
-		cheapestBook := service.CheapestBook(books).Name
+		cheapest, found := service.CheapestBook(books)
+		var cheapestBook string
+		if found {
+			cheapestBook = cheapest.Name
+		} else {
+			cheapestBook = ""
+		}
 		booksWrittenByAuthor := service.BooksWrittenByAuthor(books, query.Author)
 
 		ctx.JSON(http.StatusOK, map[string]interface{}{
